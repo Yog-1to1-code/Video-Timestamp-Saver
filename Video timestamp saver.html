@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Video Player</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #0B0A1A;
+            color: #fff;
+        }
+
+        .video-container {
+            background-color: #13112e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            width: 95%;
+            max-width: 1000px;
+        }
+
+        #videoPlayer {
+            width: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-select-container {
+            width: 100%;
+            height: 30vh;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #201e3d;
+            border-radius: 8px;
+        }
+
+        #fileSelect,
+        #outputFileSelect {
+            display: none;
+        }
+
+        .file-select-button {
+            background-color: #2f2b5c;
+            color: #8be9fd;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .file-select-button:hover {
+            background-color: #3f3b6c;
+            color: #ff79c6;
+        }
+
+        .file-select-button svg {
+            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            background-color: transparent;
+            color: #8be9fd;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            background-color: rgba(47, 43, 92, 0.5);
+        }
+
+        button:active {
+            background-color: #2f2b5c;
+            color: #ff79c6;
+        }
+
+        #playPause,
+        #copyTimestamp,
+        #addTimestamp,
+        #backwardSec,
+        #forwardSec,
+        #prevFrame,
+        #nextFrame {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+
+        #timeDisplay,
+        #fpsDisplay {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 1em;
+            color: #50fa7b;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        #progressBar {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #201e3d;
+            cursor: pointer;
+            border-radius: 3px;
+            margin: 0 10px;
+            position: relative;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #progress {
+            width: 0;
+            height: 100%;
+            background-color: #bd93f9;
+            border-radius: 3px;
+            transition: width 0.1s;
+        }
+
+        #progressBlob {
+            width: 12px;
+            height: 12px;
+            background-color: #ff79c6;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 0;
+            transition: left 0.1s;
+        }
+
+        .time {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #8be9fd;
+        }
+
+        .file-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+
+            .controls,
+            .file-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            button {
+                flex: 1 0 20%;
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="video-container">
+        <div class="file-select-container" id="fileSelectContainer">
+            <input type="file" id="fileSelect" accept="video/*">
+            <label for="fileSelect" class="file-select-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"></path>
+        <line x1="12" y1="10" x2="12" y2="16"></line>
+        <line x1="9" y1="13" x2="15" y2="13"></line>
+    </svg>
+    Select Video File
+</label>
+
+
+        </div>
+        <video id="videoPlayer">
+            Your browser does not support the video tag.
+        </video>
+        <div class="progress-container">
+            <span class="time" id="currentTime">00:00:00:00</span>
+            <div id="progressBar">
+                <div id="progress"></div>
+                <div id="progressBlob"></div>
+            </div>
+            <span class="time" id="duration">00:00:00:00</span>
+        </div>
+        <div class="controls">
+            <button id="backwardSec" title="-1 Second">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 19 2 12 11 5 11 19"></polygon>
+        <polygon points="22 19 13 12 22 5 22 19"></polygon>
+    </svg>
+</button>
+<button id="prevFrame" title="Previous Frame">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18L9 12L15 6" />
+    </svg>
+</button>
+<button id="playPause" title="Play/Pause">
+    <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+    <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        style="display: none;">
+        <line x1="6" y1="4" x2="6" y2="20" />
+        <line x1="18" y1="4" x2="18" y2="20" />
+    </svg>
+</button>
+<button id="nextFrame" title="Next Frame">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18L15 12L9 6" />
+    </svg>
+</button>
+<button id="forwardSec" title="+1 Second">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 19 22 12 13 5 13 19"></polygon>
+        <polygon points="2 19 11 12 2 5 2 19"></polygon>
+    </svg>
+</button>
+            <button id="copyTimestamp" title="Copy Timestamp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+            </button>
+            <button id="addTimestamp" title="Add Timestamp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+            </button>
+        </div>
+        <div id="timeDisplay">00:00:00:00</div>
+        <div id="fpsDisplay">FPS: 24</div>
+        <div class="file-controls">
+            <input type="file" id="outputFileSelect" accept=".txt">
+         <label for="outputFileSelect" class="file-select-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+    Select Output File
+</label>
+            <button id="saveButton" title="Save Timestamps">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" />
+                    <path d="M17 21V13H7V21" />
+                    <path d="M7 3V8H15" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const playPauseButton = document.getElementById('playPause');
+        const prevFrameButton = document.getElementById('prevFrame');
+        const nextFrameButton = document.getElementById('nextFrame');
+        const backwardSecButton = document.getElementById('backwardSec');
+        const forwardSecButton = document.getElementById('forwardSec');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const progressBlob = document.getElementById('progressBlob');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const copyTimestampButton = document.getElementById('copyTimestamp');
+        const addTimestampButton = document.getElementById('addTimestamp');
+        const fileSelect = document.getElementById('fileSelect');
+        const fileSelectContainer = document.getElementById('fileSelectContainer');
+        const outputFileSelect = document.getElementById('outputFileSelect');
+        const saveButton = document.getElementById('saveButton');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+
+        let timestamps = [];
+        let outputFile;
+
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            durationDisplay.textContent = formatTime(videoPlayer.duration);
+            progressBar.max = videoPlayer.duration;
+        });
+
+        videoPlayer.addEventListener('timeupdate', () => {
+            currentTimeDisplay.textContent = formatTime(videoPlayer.currentTime);
+            progress.style.width = (videoPlayer.currentTime / videoPlayer.duration * 100) + '%';
+            progressBlob.style.left = (videoPlayer.currentTime / videoPlayer.duration * 100) + '%';
+            timeDisplay.textContent = formatTime(videoPlayer.currentTime, true);
+        });
+
+        playPauseButton.addEventListener('click', () => {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                videoPlayer.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        });
+
+        prevFrameButton.addEventListener('click', () => {
+            videoPlayer.currentTime -= 1 / 24;
+        });
+
+        nextFrameButton.addEventListener('click', () => {
+            videoPlayer.currentTime += 1 / 24;
+        });
+
+        backwardSecButton.addEventListener('click', () => {
+            videoPlayer.currentTime -= 1;
+        });
+
+        forwardSecButton.addEventListener('click', () => {
+            videoPlayer.currentTime += 1;
+        });
+
+        progressBar.addEventListener('click', (event) => {
+            const rect = progressBar.getBoundingClientRect();
+            const position = event.clientX - rect.left;
+            const percentage = position / rect.width;
+            videoPlayer.currentTime = percentage * videoPlayer.duration;
+        });
+
+        let isDragging = false;
+
+        progressBlob.addEventListener('mousedown', () => {
+            isDragging = true;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        progressBar.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const rect = progressBar.getBoundingClientRect();
+                let position = event.clientX - rect.left;
+                const percentage = position / rect.width;
+                videoPlayer.currentTime = percentage * videoPlayer.duration;
+            }
+        });
+
+        copyTimestampButton.addEventListener('click', () => {
+            const timestamp = formatTime(videoPlayer.currentTime, true);
+            navigator.clipboard.writeText(timestamp);
+        });
+
+        addTimestampButton.addEventListener('click', () => {
+            const timestamp = formatTime(videoPlayer.currentTime, true);
+            timestamps.push(timestamp);
+        });
+
+        saveButton.addEventListener('click', () => {
+            if (outputFile) {
+                const timestampsString = timestamps.join('\n');
+                const blob = new Blob([timestampsString], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = outputFile.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        fileSelect.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const fileURL = URL.createObjectURL(file);
+            videoPlayer.src = fileURL;
+            videoPlayer.style.display = 'block';
+            fileSelectContainer.style.display = 'none';
+        });
+
+        outputFileSelect.addEventListener('change', (event) => {
+            outputFile = event.target.files[0];
+        });
+
+        function formatTime(seconds, includeFrames = false) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            const frames = includeFrames ? Math.round((seconds % 1) * 24) : 0;
+
+            return `${pad(hours)}:${pad(minutes)}:${pad(secs)}:${includeFrames ? pad(frames) : ''}`;
+        }
+
+        function pad(number) {
+            return (number < 10 ? '0' : '') + number;
+        }
+    </script>
+</body>
+
+</html>
