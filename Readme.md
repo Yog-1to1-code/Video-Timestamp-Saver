@@ -23,7 +23,7 @@ This is a simple yet powerful video player application that allows you to easily
 
 ## Screenshots
 
-![Screenshot]((https://raw.githubusercontent.com/Yog-1to1-Code/Video-Timestamp-Saver/main/Video-Timestamp-Saver.png)
+![Screenshot](https://raw.githubusercontent.com/Yog-1to1-Code/Video-Timestamp-Saver/main/Video-Timestamp-Saver.png)
 *The video player with the controls and timestamp management features.*
 
 
